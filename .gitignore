@@ -15,8 +15,12 @@
 cmd/gophermart/main
 cmd/gophermart/gophermart
 
+cmd/faccrual/faccrual
+
 # Dependency directories (remove the comment below to include it)
 vendor/
+
+db/
 
 # IDEs directories
 .idea

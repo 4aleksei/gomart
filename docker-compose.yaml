@@ -1,0 +1,59 @@
+services:
+  gopher-postgres:
+    container_name: gopher-postgres
+    image: postgres:17.2
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: "P@ssw0rd"
+      PGDATA: "/var/lib/postgresql/data"
+    volumes:
+      - "./db/init:/docker-entrypoint-initdb.d"
+      - "gopher-postgres:/var/lib/postgresql/data"
+    ports:
+      - "6432:5432"
+    networks:
+      - gopher-net
+    restart: always
+
+  gopher-gophermart:
+    container_name: gopher-gophermart
+    build:
+      context: .
+      dockerfile: ./Dockerfile.gmart
+    depends_on:
+      gopher-postgres:
+        condition: service_healthy
+    ports:
+      - 8180:8080
+    environment:
+      DATABASE_URI: "postgresql://gopher-postgres:5432/postgres?user=postgres&password=P@ssw0rd"
+      RUN_ADDRESS: ":8080"
+      ACCRUAL_SYSTEM_ADDRESS: "http://gopher-faccrual:8100"
+    networks:
+      - gopher-net
+    restart: always
+
+  gopher-faccrual:
+    container_name: gopher-faccrual
+    build:
+      context: .
+      dockerfile: ./Dockerfile.faccrual
+    ports:
+      - 8100:8100
+    networks:
+      - gopher-net
+    restart: always
+
+volumes:
+  gopher-postgres:
+
+networks:
+  gopher-net:
+    driver: bridge

@@ -1,0 +1,7 @@
+FROM debian:stable-slim
+
+WORKDIR /app
+
+COPY ./cmd/gophermart/gophermart /app/ 
+
+ENTRYPOINT ["/app/gophermart"]

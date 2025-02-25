@@ -1,0 +1,7 @@
+FROM debian:stable-slim
+
+WORKDIR /app
+
+COPY ./cmd/faccrual/faccrual /app/ 
+
+ENTRYPOINT ["/app/faccrual"]
