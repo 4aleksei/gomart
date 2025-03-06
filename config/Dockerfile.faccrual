@@ -1,0 +1,4 @@
+FROM ubuntu
+WORKDIR /app
+COPY ./faccrual ./
+ENTRYPOINT ["/app/faccrual"]

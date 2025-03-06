@@ -72,4 +72,10 @@ tasks:
       cmds:
         - |
           cd ./internal/gophermart/handlers
-          go test
+          go test -cover
+  up:
+      desc: compile and Locale RUN stack
+      silent: true
+      cmds:
+        - |
+          sudo RUN_ADDRESS=':8080' ACCRUAL_SYSTEM_ADDRESS='http://gopher-faccrual:8100' DATABASE_DB='postgres' DATABASE_USER='postgres' DATABASE_PASS='P@ssw0rd'  DATABASE_URI='postgresql://gopher-postgres:5432/postgres?user=postgres&password=P@ssw0rd' docker compose up

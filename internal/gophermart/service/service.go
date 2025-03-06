@@ -254,7 +254,7 @@ func (s *HandleService) sendRun(ctx context.Context, jobs chan job.Job, orders [
 	}
 }
 
-func (s *HandleService) SendOrdersToAccrual(ctx context.Context, orders []store.Order) (map[uint64]store.Order, int, error) {
+func (s *HandleService) SendOrdersToAccrual(ctx context.Context, orders []store.Order) (a map[uint64]store.Order, b int, c error) {
 	wg := &sync.WaitGroup{}
 	jobs := make(chan job.Job, s.httpc.WorkerCount*2)
 	results := make(chan job.Result, s.httpc.WorkerCount*2)

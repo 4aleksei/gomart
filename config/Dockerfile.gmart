@@ -1,0 +1,4 @@
+FROM ubuntu
+WORKDIR /app
+COPY ./gophermart ./
+ENTRYPOINT ["/app/gophermart"]

@@ -1,0 +1,81 @@
+name: Publish On CI 
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Choose where you want to publish the build'
+        required: true
+        default: AppTester
+        type: choice
+        options:
+          - MyYandexCloud
+
+concurrency:
+  group: main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: self-hosted
+    container: golang:1.22
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
+          chmod 600 ~/.ssh/github
+          cat >>~/.ssh/config <<END
+          Host target
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/github
+            LogLevel ERROR
+            StrictHostKeyChecking no
+          END
+      - name: Compile 
+        run: |
+          mv ./.git ./.git_temp
+          cd ./cmd/gophermart
+          go build
+          cd ../faccrual
+          go build
+          cd ../../
+          mv ./.git_temp ./.git
+      - name: Make env
+        env: 
+          RUN_ADDRESS: '${{ secrets.RUN_ADDRESS }}'
+          ACCRUAL_SYSTEM_ADDRESS: '${{ secrets.ACCRUAL_SYSTEM_ADDRESS }}'
+          DATABASE_DB: '${{ secrets.DATABASE_DB }}'
+          DATABASE_USER: '${{ secrets.DATABASE_USER }}'
+          DATABASE_PASS: '${{ secrets.DATABASE_PASS }}'
+          DATABASE_URI: '${{ secrets.DATABASE_URI }}' 
+        run: |
+          cat >>./.env <<END
+          RUN_ADDRESS=$RUN_ADDRESS
+          ACCRUAL_SYSTEM_ADDRESS=$ACCRUAL_SYSTEM_ADDRESS
+          DATABASE_DB=$DATABASE_DB
+          DATABASE_USER=$DATABASE_USER
+          DATABASE_PASS=$DATABASE_PASS
+          DATABASE_URI=$DATABASE_URI
+          END
+      - name: Run Deploy
+        run: |
+          ssh -F ~/.ssh/config -i ~/.ssh/github  target "docker compose down || true ;exit"
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./cmd/gophermart/gophermart target:~/
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./cmd/faccrual/faccrual target:~/
+          ssh -F ~/.ssh/config -i ~/.ssh/github  target "mkdir config || true;exit"
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./config/* target:~/config/
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./config/Dockerfile.* target:~/
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./docker-compose.yaml target:~/
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./.env target:~/
+          ssh -F ~/.ssh/config -i ~/.ssh/github target "docker compose up -d --build --force-recreate;exit"
+          ssh -F ~/.ssh/config -i ~/.ssh/github  target "rm -f ./.env || true;exit"
