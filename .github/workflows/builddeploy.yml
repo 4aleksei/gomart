@@ -28,15 +28,15 @@ jobs:
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST2 }}
+          SSH_HO: ${{ secrets.SSH_HOST3 }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           mkdir -p ~/.ssh/
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
           chmod 600 ~/.ssh/github
           cat >>~/.ssh/config <<END
-          Host target2
-            HostName $SSH_HOST
+          Host target3
+            HostName $SSH_HO
             User $SSH_USER
             IdentityFile ~/.ssh/github
             LogLevel ERROR
@@ -70,13 +70,15 @@ jobs:
           END
       - name: Run Deploy
         run: |
-          ssh -F ~/.ssh/config -i ~/.ssh/github  target2 "docker compose down || true ;exit"
-          scp -F ~/.ssh/config -i ~/.ssh/github  ./cmd/gophermart/gophermart target2:~/
-          scp -F ~/.ssh/config -i ~/.ssh/github  ./cmd/faccrual/faccrual target2:~/
-          ssh -F ~/.ssh/config -i ~/.ssh/github  target2 "mkdir config || true;exit"
-          scp -F ~/.ssh/config -i ~/.ssh/github  ./config/* target2:~/config/
-          scp -F ~/.ssh/config -i ~/.ssh/github  ./config/Dockerfile.* target2:~/
-          scp -F ~/.ssh/config -i ~/.ssh/github  ./docker-compose.yaml target2:~/
-          scp -F ~/.ssh/config -i ~/.ssh/github  ./.env target2:~/
-          ssh -F ~/.ssh/config -i ~/.ssh/github target2 "docker compose up -d --build --force-recreate;exit"
-          ssh -F ~/.ssh/config -i ~/.ssh/github  target2 "rm -f ./.env || true;exit"
+          ssh -F ~/.ssh/config -i ~/.ssh/github  target3 "docker compose down || true ;exit"
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./cmd/gophermart/gophermart target3:~/
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./cmd/faccrual/faccrual target3:~/
+          ssh -F ~/.ssh/config -i ~/.ssh/github  target3 "mkdir config || true;exit"
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./config/* target3:~/config/
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./config/Dockerfile.* target3:~/
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./docker-compose.yaml target3:~/
+          scp -F ~/.ssh/config -i ~/.ssh/github  ./.env target3:~/
+          ssh -F ~/.ssh/config -i ~/.ssh/github target3 "docker compose up -d --build --force-recreate;exit"
+          ssh -F ~/.ssh/config -i ~/.ssh/github  target3 "rm -f ./.env || true;exit"
+
+
