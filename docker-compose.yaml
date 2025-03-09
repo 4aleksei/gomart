@@ -1,0 +1,99 @@
+services:
+  gopher-postgres:
+    container_name: gopher-postgres
+    image: postgres:17.2
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_DB}" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_DB: ${DATABASE_DB}
+      POSTGRES_PASSWORD: ${DATABASE_PASS}
+      PGDATA: "/var/lib/postgresql/data"
+    volumes:
+      - "./db/init:/docker-entrypoint-initdb.d"
+      - "gopher-postgres:/var/lib/postgresql/data"
+    ports:
+      - "6432:5432"
+    networks:
+      - gopher-net
+    restart: always
+
+  gopher-gophermart:
+    container_name: gopher-gophermart
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+    build:
+      context: .
+      dockerfile: ./Dockerfile.gmart
+    depends_on:
+      gopher-postgres:
+        condition: service_healthy
+    ports:
+      - 8180:8090
+    environment:
+      DATABASE_URI: ${DATABASE_URI}
+      RUN_ADDRESS: ${RUN_ADDRESS}
+      ACCRUAL_SYSTEM_ADDRESS: ${ACCRUAL_SYSTEM_ADDRESS}
+    networks:
+      - gopher-net
+    restart: always
+
+  gopher-faccrual:
+    container_name: gopher-faccrual
+    build:
+      context: .
+      dockerfile: ./Dockerfile.accrual
+    ports:
+      - 8080:8080
+    networks:
+      - gopher-net
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - ./config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    networks:
+      - gopher-net
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - gopher-net
+
+  promtail:
+    image:  grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./config/promtail.yaml:/etc/promtail/docker-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/docker-config.yaml
+    depends_on:
+      - loki
+    networks:
+      - gopher-net
+
+
+
+
+volumes:
+  gopher-postgres:
+
+networks:
+  gopher-net:
+    driver: bridge
