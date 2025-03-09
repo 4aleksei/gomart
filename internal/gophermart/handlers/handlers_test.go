@@ -25,6 +25,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-chi/jwtauth/v5"
+
+	"github.com/greatcloak/decimal"
 )
 
 const (
@@ -380,6 +382,7 @@ func Test_handlers_mainPagePostOrder(t *testing.T) {
 }
 
 func Test_handlers_mainPageGetOrder(t *testing.T) {
+	decimal.MarshalJSONWithoutQuotes = true
 	type want struct {
 		contentType string
 		statusCode  int
@@ -425,7 +428,7 @@ func Test_handlers_mainPageGetOrder(t *testing.T) {
 			OrderID: 5062821234567892,
 			UserID:  1,
 			Status:  "PROCESSED",
-			Accrual: 500,
+			Accrual: decimal.RequireFromString("500"),
 			TimeU:   timeNow,
 			TimeC:   timeNow,
 		},
@@ -433,7 +436,7 @@ func Test_handlers_mainPageGetOrder(t *testing.T) {
 			OrderID: 5062821234567893,
 			UserID:  1,
 			Status:  "INVALID",
-			Accrual: 0,
+			Accrual: decimal.RequireFromString("0"),
 			TimeU:   timeNow,
 			TimeC:   timeNow,
 		}}
@@ -473,7 +476,7 @@ func Test_handlers_mainPageGetOrder(t *testing.T) {
 		{name: "Get Orders before login No1", req: request{method: http.MethodGet, url: "/api/user/orders", body: "5062821234567892", contentType: "text/plain"}, want: want{statusCode: http.StatusUnauthorized, contentType: "", body: ""}},
 		{name: "Login User  No2", req: request{method: http.MethodPost, url: "/api/user/login", body: " {\"login\":\"" + name + "\" , \"password\":\"" + passWord + "\" }  ", contentType: "application/json"}, want: want{statusCode: http.StatusOK, contentType: "", body: ""}},
 		{name: "Get Orders No3", req: request{method: http.MethodGet, url: "/api/user/orders", body: "", contentType: "text/plain"}, want: want{statusCode: http.StatusOK, contentType: "application/json",
-			body: "[{\"number\": \"5062821234567892\", \"status\": \"PROCESSED\", \"accrual\": 500, \"uploaded_at\": \"" + strTime + "\" }, {\"number\": \"5062821234567893\", \"status\": \"INVALID\", \"uploaded_at\": \"" + strTime + "\" }]"},
+			body: "[{\"number\": \"5062821234567892\", \"status\": \"PROCESSED\", \"accrual\": 500, \"uploaded_at\": \"" + strTime + "\" }, {\"number\": \"5062821234567893\", \"status\": \"INVALID\", \"accrual\": 0, \"uploaded_at\": \"" + strTime + "\" }]"},
 		},
 	}
 
@@ -511,6 +514,8 @@ func Test_handlers_mainPageGetOrder(t *testing.T) {
 }
 
 func Test_handlers_mainPageGetBalance(t *testing.T) {
+	decimal.MarshalJSONWithoutQuotes = true
+
 	type want struct {
 		contentType string
 		statusCode  int
@@ -549,11 +554,12 @@ func Test_handlers_mainPageGetBalance(t *testing.T) {
 		Password: passWordSig,
 		ID:       1,
 	}
+
 	timeNow := time.Now()
 	var balance = store.Balance{
 		UserID:    1,
-		Accrual:   500,
-		Withdrawn: 10,
+		Accrual:   decimal.RequireFromString("500"),
+		Withdrawn: decimal.RequireFromString("10"),
 		TimeC:     timeNow,
 	}
 
@@ -670,7 +676,7 @@ func Test_handlers_mainPagePostWithdraw(t *testing.T) {
 	var withdraw = store.Withdraw{
 		UserID:  1,
 		OrderID: 2377225624,
-		Sum:     751,
+		Sum:     decimal.RequireFromString("751"),
 	}
 
 	stor.EXPECT().
@@ -744,6 +750,7 @@ func Test_handlers_mainPagePostWithdraw(t *testing.T) {
 }
 
 func Test_handlers_mainPageGetWithdrawals(t *testing.T) {
+	decimal.MarshalJSONWithoutQuotes = true
 	type want struct {
 		contentType string
 		statusCode  int
@@ -782,22 +789,24 @@ func Test_handlers_mainPageGetWithdrawals(t *testing.T) {
 		Password: passWordSig,
 		ID:       1,
 	}
+
 	timeNow := time.Now()
 	strTime := timeNow.Format(time.RFC3339Nano) //RFC1123
 	var withdraw = []store.Withdraw{
 		{
 			UserID:  1,
 			OrderID: 2377225624,
-			Sum:     751,
+			Sum:     decimal.RequireFromString("751"),
 			TimeC:   timeNow,
 		},
 		{
 			UserID:  1,
 			OrderID: 2377225625,
-			Sum:     200,
+			Sum:     decimal.RequireFromString("200"),
 			TimeC:   timeNow,
 		},
 	}
+	decimal.MarshalJSONWithoutQuotes = true
 
 	stor.EXPECT().
 		GetUser(gomock.Any(), arg).

@@ -17,6 +17,8 @@ import (
 
 	"github.com/4aleksei/gmart/internal/common/httpclientpool"
 	"github.com/4aleksei/gmart/internal/common/httpclientpool/job"
+
+	"github.com/greatcloak/decimal"
 )
 
 type ServiceStore interface {
@@ -62,6 +64,7 @@ var (
 )
 
 func NewService(s ServiceStore, cfg *config.Config, h *httpclientpool.PoolHandler) *HandleService {
+	decimal.MarshalJSONWithoutQuotes = true
 	return &HandleService{
 		key:    cfg.Key,
 		keySig: cfg.KeySignature,
@@ -150,7 +153,7 @@ func (s *HandleService) RegisterOrder(ctx context.Context, userIDStr, orderIDStr
 		return fmt.Errorf("failed %w : %w", ErrBadValueUser, err)
 	}
 
-	err = s.store.InsertOrder(ctx, store.Order{OrderID: orderID, UserID: userID, Status: "NEW", Accrual: 0})
+	err = s.store.InsertOrder(ctx, store.Order{OrderID: orderID, UserID: userID, Status: "NEW", Accrual: decimal.RequireFromString("0")})
 	if err != nil {
 		if errors.Is(err, pg.ErrAlreadyExists) {
 			one, err := s.store.GetOneOrder(ctx, orderID)

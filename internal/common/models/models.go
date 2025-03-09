@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"time"
+
+	"github.com/greatcloak/decimal"
 )
 
 type (
@@ -13,27 +15,27 @@ type (
 	}
 
 	Order struct {
-		OrderID string    `json:"number"`
-		Status  string    `json:"status"`
-		Accrual float64   `json:"accrual,omitempty"`
-		Time    time.Time `json:"uploaded_at"`
+		OrderID string          `json:"number"`
+		Status  string          `json:"status"`
+		Accrual decimal.Decimal `json:"accrual,omitempty"`
+		Time    time.Time       `json:"uploaded_at"`
 	}
 
 	OrderAccrual struct {
-		OrderID string  `json:"order"`
-		Status  string  `json:"status"`
-		Accrual float64 `json:"accrual,omitempty"`
+		OrderID string          `json:"order"`
+		Status  string          `json:"status"`
+		Accrual decimal.Decimal `json:"accrual,omitempty"`
 	}
 
 	Balance struct {
-		Accrual   float64 `json:"current"`
-		Withdrawn float64 `json:"withdrawn"`
+		Accrual   decimal.Decimal `json:"current"`
+		Withdrawn decimal.Decimal `json:"withdrawn"`
 	}
 
 	Withdraw struct {
-		OrderID string    `json:"order"`
-		Sum     float64   `json:"sum"`
-		TimeC   time.Time `json:"processed_at,omitempty"`
+		OrderID string          `json:"order"`
+		Sum     decimal.Decimal `json:"sum"`
+		TimeC   time.Time       `json:"processed_at,omitempty"`
 	}
 )
 

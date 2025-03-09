@@ -34,7 +34,7 @@ services:
       gopher-postgres:
         condition: service_healthy
     ports:
-      - 8180:8080
+      - 8180:8090
     environment:
       DATABASE_URI: ${DATABASE_URI}
       RUN_ADDRESS: ${RUN_ADDRESS}
@@ -47,9 +47,9 @@ services:
     container_name: gopher-faccrual
     build:
       context: .
-      dockerfile: ./Dockerfile.faccrual
+      dockerfile: ./Dockerfile.accrual
     ports:
-      - 8100:8100
+      - 8080:8080
     networks:
       - gopher-net
     restart: always

@@ -1,0 +1,7 @@
+FROM ubuntu
+
+WORKDIR /app
+
+COPY ./accrual_linux_amd64 ./
+
+ENTRYPOINT ["/app/accrual_linux_amd64"]

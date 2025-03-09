@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/greatcloak/decimal"
 )
 
 var ErrConflict = errors.New("data conflict")
@@ -34,25 +36,25 @@ type (
 	}
 
 	Order struct {
-		OrderID uint64    `db:"order_id"`
-		UserID  uint64    `db:"user_id"`
-		Status  string    `db:"status"`
-		Accrual float64   `db:"accrual"`
-		TimeU   time.Time `db:"uploaded_at"`
-		TimeC   time.Time `db:"changed_at"`
+		OrderID uint64          `db:"order_id"`
+		UserID  uint64          `db:"user_id"`
+		Status  string          `db:"status"`
+		Accrual decimal.Decimal `db:"accrual"`
+		TimeU   time.Time       `db:"uploaded_at"`
+		TimeC   time.Time       `db:"changed_at"`
 	}
 
 	Balance struct {
-		UserID    uint64    `db:"user_id"`
-		Accrual   float64   `db:"current"`
-		Withdrawn float64   `db:"withdrawn"`
-		TimeC     time.Time `db:"changed_at"`
+		UserID    uint64          `db:"user_id"`
+		Accrual   decimal.Decimal `db:"current"`
+		Withdrawn decimal.Decimal `db:"withdrawn"`
+		TimeC     time.Time       `db:"changed_at"`
 	}
 
 	Withdraw struct {
-		UserID  uint64    `db:"user_id"`
-		OrderID uint64    `db:"order_id"`
-		Sum     float64   `db:"sum"`
-		TimeC   time.Time `db:"processed_at"`
+		UserID  uint64          `db:"user_id"`
+		OrderID uint64          `db:"order_id"`
+		Sum     decimal.Decimal `db:"sum"`
+		TimeC   time.Time       `db:"processed_at"`
 	}
 )
