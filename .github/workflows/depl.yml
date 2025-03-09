@@ -60,7 +60,7 @@ jobs:
           chmod 600 ~/.ssh/github
           cat >>~/.ssh/config <<END
           Host target2
-            HostName $SSH_HOST
+            HostName ${{ secrets.SSH_YANDEX }}
             User $SSH_USER
             IdentityFile ~/.ssh/github
             LogLevel ERROR
