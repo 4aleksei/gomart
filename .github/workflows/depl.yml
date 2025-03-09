@@ -52,7 +52,7 @@ jobs:
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_YANDEX }}
+          SSH_HOST: '${{ secrets.SSH_YANDEX }}'
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           mkdir -p ~/.ssh/
@@ -60,7 +60,7 @@ jobs:
           chmod 600 ~/.ssh/github
           cat >>~/.ssh/config <<END
           Host target2
-            HostName ${{ secrets.SSH_YANDEX }}
+            HostName $SSH_HOST
             User $SSH_USER
             IdentityFile ~/.ssh/github
             LogLevel ERROR
