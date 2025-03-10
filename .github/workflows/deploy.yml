@@ -59,6 +59,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "./cmd/gophermart/gophermart,./cmd/accrual/accrual_linux_amd64,./docker-compose.yaml,./.env,./config/Dockerfile.*"
           target: "~/"
+          strip_components: 1
       - name: copy to config file via ssh key
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -66,7 +67,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "./config/*"
-          target: "~/config/"
+          target: "~/"
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.2.2
         with:
