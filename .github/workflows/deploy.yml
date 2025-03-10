@@ -50,6 +50,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            cd ./build
             docker compose down || true
       - name: copy file via ssh key
         uses: appleboy/scp-action@v0.1.7
