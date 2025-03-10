@@ -79,7 +79,7 @@ jobs:
           source: "./config/Dockerfile.*"
           target: "~/build"
           overwrite: true
-          strip_components: 2
+          strip_components: 1
       - name: copy to config file via ssh key
         uses: appleboy/scp-action@v0.1.7
         with:
