@@ -1,0 +1,25 @@
+name: remote ssh command
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Choose where you want to publish'
+        required: true
+        default: AppTester
+        type: choice
+        options:
+          - MyYandex
+jobs:
+  build:
+    name: Build
+    runs-on: self-hosted
+    container: golang:1.23
+    steps:
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_YANDEX }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: whoami
+
