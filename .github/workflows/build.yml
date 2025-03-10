@@ -15,11 +15,68 @@ jobs:
     runs-on: self-hosted
     container: golang:1.23
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Compile
+        run: |
+          mv ./.git ./.git_temp
+          cd ./cmd/gophermart
+          go build
+          cd ../faccrual
+          go build
+          cd ../../
+          mv ./.git_temp ./.git
+      - name: Make env
+        env:
+          RUN_ADDRESS: '${{ secrets.RUN_ADDRESS }}'
+          ACCRUAL_SYSTEM_ADDRESS: '${{ secrets.ACCRUAL_SYSTEM_ADDRESS }}'
+          DATABASE_DB: '${{ secrets.DATABASE_DB }}'
+          DATABASE_USER: '${{ secrets.DATABASE_USER }}'
+          DATABASE_PASS: '${{ secrets.DATABASE_PASS }}'
+          DATABASE_URI: '${{ secrets.DATABASE_URI }}'
+        run: |
+          cat >>./.env <<END
+          RUN_ADDRESS=$RUN_ADDRESS
+          ACCRUAL_SYSTEM_ADDRESS=$ACCRUAL_SYSTEM_ADDRESS
+          DATABASE_DB=$DATABASE_DB
+          DATABASE_USER=$DATABASE_USER
+          DATABASE_PASS=$DATABASE_PASS
+          DATABASE_URI=$DATABASE_URI
+          END
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.SSH_YANDEX }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: whoami
+          script: |
+            docker compose down || true
+      - name: copy file via ssh key
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_YANDEX }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./cmd/gophermart/gophermart,./cmd/accrual/accrual_linux_amd64,./docker-compose.yaml,./.env,./config/Dockerfile.*"
+          target: "~/"
+      - name: copy to config file via ssh key
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_YANDEX }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./config/*"
+          target: "~/config/"
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_YANDEX }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker compose up -d --build --force-recreate
+
+
+
+
 
